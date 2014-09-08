@@ -7,7 +7,7 @@ type Bullet struct {
 }
 
 func NewMachineGunBulletType() Bullet {
-	return Bullet {
-		Damage: 5
+	return Bullet{
+		Damage: 5,
 	}
 }
