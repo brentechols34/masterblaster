@@ -25,13 +25,14 @@ func NewManager() *Manager {
 }
 
 type Manager struct {
-	Bodies           map[uint32]*Base // List of all bodies in sim
-	CollidableBodies map[uint32]*Base // List of all collidable bodies in sim
-	Shutdown         chan bool        // Channel to send kill message
-	AddBody          chan Base        // Add new physics bodies to sim
-	RemoveBody       chan Base        // Remove physics bodies from sim
-	UpdateBody       chan Base        // Update a body already in system
-	Events           chan Event       // Outgoing updates
+	Bodies               map[uint32]*Base // List of all bodies in sim
+	CollidableBodies     map[uint32]*Base // List of all collidable bodies in sim
+	Shutdown             chan bool        // Channel to send kill message
+	AddBody              chan Base        // Add new physics bodies to sim
+	AddNonCollidableBody chan Base        // Add body that doesn't need collision checks against
+	RemoveBody           chan Base        // Remove physics bodies from sim
+	UpdateBody           chan Base        // Update a body already in system
+	Events               chan Event       // Outgoing updates
 }
 
 func (m *Manager) Run() {
@@ -51,15 +52,26 @@ func (m *Manager) Run() {
 			}
 			m.Bodies[body.Id] = &body
 			m.CollidableBodies[body.Id] = &body
-		case body := <-m.UpdateBody:
+		case body := <-m.AddNonCollidableBody:
 			if CompareFloat(body.Velocity.X, 0) || CompareFloat(body.Velocity.Y, 0) ||
 				CompareFloat(body.Acceleration.X, 0) || CompareFloat(body.Acceleration.Y, 0) {
 				body.moving = true
 			}
 			m.Bodies[body.Id] = &body
-			m.CollidableBodies[body.Id] = &body
+		case body := <-m.UpdateBody:
+			if CompareFloat(body.Velocity.X, 0) || CompareFloat(body.Velocity.Y, 0) ||
+				CompareFloat(body.Acceleration.X, 0) || CompareFloat(body.Acceleration.Y, 0) {
+				body.moving = true
+			}
+			if _, ok := m.Bodies[body.Id]; ok {
+				m.Bodies[body.Id] = &body
+			}
+			if _, ok := m.CollidableBodies[body.Id]; ok {
+				m.CollidableBodies[body.Id] = &body
+			}
 		case body := <-m.RemoveBody:
 			delete(m.Bodies, body.Id)
+			delete(m.CollidableBodies, body.Id)
 		case <-m.Shutdown:
 			doRun = false
 		}
