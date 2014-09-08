@@ -1,7 +1,11 @@
 package GameObjects
 
+import (
+	"github.com/brentechols34/masterblaster/physics"
+)
+
 type Bullet struct {
-	Base
+	physics.Base
 	Damage float32
 }
 
