@@ -6,6 +6,7 @@ type Base struct {
 	Velocity     Vect2
 	Acceleration Vect2
 	Size         int16
+	moving       bool
 }
 
 type Vect2 struct {
@@ -21,4 +22,9 @@ func (v Vect2) Add(v2 Vect2) {
 
 func MultVect2(v1 Vect2, val float32) Vect2 {
 	return Vect2{X: v1.X * val, Y: v1.Y * val}
+}
+
+func CompareFloat(f1 float32, f2 float32) bool {
+	diff := f1 - f2
+	return diff < -0.01 || diff > 0.01
 }

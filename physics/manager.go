@@ -7,7 +7,8 @@ import (
 
 const (
 	SimUpdatesPerSecond = 50.0
-	SimUpdateInverse    = 1000.0 / SimUpdatesPerSecond
+	SimUpdateSeconds    = 1000.0 / SimUpdatesPerSecond
+	SimUpdateInverse    = 1 / SimUpdatesPerSecond
 	FullCircle          = math.Pi * 2
 )
 
@@ -22,7 +23,7 @@ func (m *Manager) Run() {
 	lastUpdate := time.Now()
 	// Wait
 	for {
-		timeout := lastUpdate.Add(time.Millisecond * SimUpdateInverse).Sub(time.Now())
+		timeout := lastUpdate.Add(time.Millisecond * SimUpdateSeconds).Sub(time.Now())
 		wait_for_timeout := true
 		for wait_for_timeout {
 			select {
@@ -30,6 +31,10 @@ func (m *Manager) Run() {
 				wait_for_timeout = false
 				break
 			case body := <-m.AddBody:
+				if CompareFloat(body.Velocity.X, 0) || CompareFloat(body.Velocity.Y, 0) ||
+					CompareFloat(body.Acceleration.X, 0) || CompareFloat(body.Acceleration.Y, 0) {
+					body.moving = true
+				}
 				m.Bodies[body.Id] = &body
 			}
 		}
@@ -43,35 +48,39 @@ func (m *Manager) Tick(sendUpdate bool) {
 	changed := false
 	updateBodies := make(map[uint32]bool, len(m.Bodies))
 	for _, body := range m.Bodies {
-		update.Type = Move
-		changed = false
-		body.Velocity.Add(MultVect2(body.Acceleration, SimUpdateInverse))
+		if body.moving {
+			update.Type = Move
+			changed = false
+			body.Velocity.Add(MultVect2(body.Acceleration, SimUpdateInverse))
 
-		if body.Velocity.X != 0.0 {
-			body.Position.X += body.Velocity.X / SimUpdatesPerSecond
-			changed = true
-		}
-		if body.Velocity.Y != 0.0 {
-			body.Position.Y += body.Velocity.Y / SimUpdatesPerSecond
-			changed = true
-		}
+			if body.Velocity.X != 0.0 {
+				body.Position.X += body.Velocity.X / SimUpdatesPerSecond
+				changed = true
+			}
+			if body.Velocity.Y != 0.0 {
+				body.Position.Y += body.Velocity.Y / SimUpdatesPerSecond
+				changed = true
+			}
 
-		// this is really really inefficient
-		for _, other := range m.Bodies {
-			if other.Id != body.Id {
-				dist := math.Pow(float64(other.Position.X-body.Position.X), 2) + math.Pow(float64(other.Position.Y-body.Position.Y), 2)
-				if dist <= math.Pow(float64(other.Size+body.Size), 2) {
-					update.Type = Collision
-					update.OtherId = other.Id
-					break
+			if changed {
+				// this is really really inefficient
+				for _, other := range m.Bodies {
+					if other.Id != body.Id {
+						dist := math.Pow(float64(other.Position.X-body.Position.X), 2) + math.Pow(float64(other.Position.Y-body.Position.Y), 2)
+						if dist <= math.Pow(float64(other.Size+body.Size), 2) {
+							update.Type = Collision
+							update.OtherId = other.Id
+							break
+						}
+					}
 				}
 			}
-		}
 
-		updateBodies[body.Id] = true
-		if changed && sendUpdate {
-			update.Base = *body
-			m.Events <- update
+			updateBodies[body.Id] = true
+			if changed && sendUpdate {
+				update.Base = *body
+				m.Events <- update
+			}
 		}
 	}
 }
