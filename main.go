@@ -1,16 +1,62 @@
 package main
 
-import ()
+import (
+	"encoding/json"
+	"flag"
+	"go/build"
+	"log"
+	"net/http"
+	"path/filepath"
+	"text/template"
+)
 
-func main() {
+var (
+	addr      = flag.String("addr", ":8080", "http service address")
+	assets    = flag.String("assets", defaultAssetPath(), "path to assets")
+	homeTempl *template.Template
+)
 
+func defaultAssetPath() string {
+	p, err := build.Default.Import("/", "", build.FindOnly)
+	if err != nil {
+		return "."
+	}
+	return p.Dir
 }
 
-func NextId () func() uint32 {
-	var id uint32
-	id = 0
+func homeHandler(c http.ResponseWriter, req *http.Request) {
+	homeTempl.Execute(c, req.Host)
+}
 
-	return func() uint32 {
-		return id++
+func main() {
+	flag.Parse()
+
+	// Setup our template html
+	homeTempl = template.Must(template.ParseFiles(filepath.Join(*assets, "test.html")))
+
+	// Setup our hub's routine
+	go h.run()
+
+	// Register handlers
+	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/ws", wsHandler)
+
+	// Log any fatal serve errors
+	if err := http.ListenAndServe(*addr, nil); err != nil {
+		log.Fatal("ListenAndServe:", err)
 	}
+}
+
+type Message struct {
+	Id      int32
+	Message string
+}
+
+func processMessage(m []byte) []byte {
+	var message Message
+	json.Unmarshal(m, &message)
+
+	log.Print(message)
+
+	return m
 }
