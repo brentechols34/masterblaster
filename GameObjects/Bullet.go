@@ -1,8 +1,7 @@
 package GameObjects
 
 type Bullet struct {
-	GameObject
-
+	Base
 	Damage float32
 }
 

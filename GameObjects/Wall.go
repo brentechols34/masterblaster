@@ -1,8 +1,7 @@
 package GameObjects
 
 type Wall struct {
-	GameObject
-
+	Base
 	Length uint16
-	Width uint16
+	Width  uint16
 }
