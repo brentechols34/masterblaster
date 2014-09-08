@@ -1,7 +1,11 @@
 package GameObjects
 
+import (
+	"github.com/brentechols34/masterblaster/physics"
+)
+
 type Wall struct {
-	Base
+	physics.Base
 	Length uint16
 	Width  uint16
 }
