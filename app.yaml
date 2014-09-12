@@ -1,0 +1,22 @@
+application: masterblaster
+version: dev
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /css
+  static_dir: client/build/css
+
+- url: /js/node_modules
+  static_dir: client/build/node_modules
+
+- url: /js
+  static_dir: client/build/js
+
+- url: /imgs
+  static_dir: client/build/imgs
+
+- url: /.*
+  static_files: client/build/index.html
+  upload: client/build/index.html

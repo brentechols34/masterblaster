@@ -1,0 +1,54 @@
+#topbar {
+	width: 100%;
+	height: 1.5em;
+	padding-left: 2em;
+}
+
+body {
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	height: 100%;
+	background: gray;
+}
+
+#gameContainer {
+	background: white;
+	margin: 2em;
+	width: 1300px;
+	height: 600px;
+	left: 2em;
+}
+
+#gameWindow {
+	border-style:solid;
+	border-color:black;
+	background: white;
+	padding: 0, 0, 0, 0;
+	width: 998px;
+	height: 600px;
+	left: 2em;
+}
+
+#sideBar {
+	border-style:solid;
+	border-color:black;
+	float:right;
+	background: white;
+	width: 188px;
+	height: 600px;
+	left: 2em;
+}
+
+#log {
+	border-style:solid;
+	border-color:black;
+	background: white;
+	margin: 2em;
+	margin-top: 0em;
+	padding: 0.5em 0.5em 0.5em 0.5em;
+	width: 1200px;
+	height: 4em;
+	overflow: auto;
+	float:left;
+}

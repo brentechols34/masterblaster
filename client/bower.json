@@ -1,0 +1,9 @@
+{
+  "name": "masterblaster",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "~0.10.0",
+    "jquery": "~2.1.1"
+  }
+}
